@@ -1,6 +1,6 @@
 "use client";
 
-import { AxiosInstance } from "../utils/axiosInstance";
+import AxiosInstance from "../utils/axiosInstance";
 // useApi.js
 import { useState, useEffect } from "react";
 const useApi = (url, options = {}) => {
@@ -20,7 +20,7 @@ const useApi = (url, options = {}) => {
     };
     fetchData();
   }, []);
-//   }, [url, options]);
+  //   }, [url, options]);
   return { data, loading, error };
 };
 export default useApi;
