@@ -12,7 +12,7 @@ const useApi = (url, params = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await AxiosInstance.get(url, { params }); // ✅ Pass params correctly
+      const response = await AxiosInstance.get(url, { params });
       setData(response);
     } catch (err) {
       setError(err);
