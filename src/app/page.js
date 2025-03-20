@@ -26,6 +26,9 @@ import {
 } from "@mui/icons-material";
 import AxiosInstance from "../Service/axiosInstance";
 import { debounce } from "lodash";
+import { useLocation } from "../Context/LocationContext";
+import fetchWeather from "../Service/weather";
+import formatTimestamp from "../utils/getDate";
 
 // Mock weather data
 const mockWeatherData = {
@@ -44,42 +47,55 @@ const mockWeatherData = {
     { day: "Fri", icon: <WindIcon />, temp: 22, condition: "Windy" },
   ],
 };
+// const updateWeather = () => {
+//   const getDate
+
+// };
 
 export default function WeatherHome() {
   const [searchLocation, setSearchLocation] = useState("");
   const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { coords, locationAccessAndGetWeather } = useLocation();
+  const [loadingPage, setLoadingPage] = useState();
   const [error, setError] = useState("");
-  const [langLat, setLangLat] = useState({ longitude: "", latitude: "" });
+  const [weatherFore, setWeatherFore] = useState();
 
-  const locationAccessAndGetWeather = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLangLat((preLangLat) => ({
-            ...preLangLat,
-            longitude,
-            latitude,
-          }));
-        },
-        (err) => {
-          setError("Location access denied.");
-          setLoading(false);
-        }
-      );
-    } else {
-      setError("Geolocation is not supported.");
-      setLoading(false);
+  useEffect(() => {
+    async function updateWeather(lat, long) {
+      const newWeather = await fetchWeather(lat, long);
+      setWeatherFore(newWeather);
     }
-  };
+    updateWeather();
+  }, [coords.latitude, searchLocation]);
+
+  // const locationAccessAndGetWeather = () => {
+  //   if ("geolocation" in navigator) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setLangLat((preLangLat) => ({
+  //           ...preLangLat,
+  //           longitude,
+  //           latitude,
+  //         }));
+  //       },
+  //       (err) => {
+  //         setError("Location access denied.");
+  //         setLoading(false);
+  //       }
+  //     );
+  //   } else {
+  //     setError("Geolocation is not supported.");
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     locationAccessAndGetWeather();
   }, []);
 
   const getLocationWeather = async () => {
-    if (!langLat) {
+    if (!(coords.latitude || coords.longitude)) {
       return;
     }
     try {
@@ -87,9 +103,9 @@ export default function WeatherHome() {
       params.units = "metric";
       if (searchLocation.trim()) {
         params.q = searchLocation.trim();
-      } else if (langLat.latitude && langLat.longitude) {
-        params.lat = langLat.latitude;
-        params.lon = langLat.longitude;
+      } else if (coords.latitude && coords.longitude) {
+        params.lat = coords.latitude;
+        params.lon = coords.longitude;
       } else {
         setError("Invalid location input.");
         return;
@@ -102,29 +118,27 @@ export default function WeatherHome() {
     } catch (err) {
       setError("Failed to fetch weather data.");
     } finally {
-      setLoading(false);
+      setLoadingPage(false);
     }
   };
 
   useEffect(() => {
-    if (langLat) {
-      getLocationWeather();
-    }
-  }, [langLat, searchLocation]);
+    getLocationWeather();
+  }, [searchLocation]);
 
   const debouncedSearch = useCallback(
     debounce(() => {
       getLocationWeather();
     }, 800),
-    [searchLocation, langLat]
+    [searchLocation]
   );
 
   // Call API when searchLocation changes
   useEffect(() => {
-    if (searchLocation.trim() || (langLat.latitude && langLat.longitude)) {
+    if (searchLocation.trim() || (coords.latitude && coords.longitude)) {
       debouncedSearch();
     }
-  }, [searchLocation, langLat, debouncedSearch]);
+  }, [searchLocation, debouncedSearch]);
   return (
     <Box
       sx={{
@@ -283,7 +297,7 @@ export default function WeatherHome() {
               <Typography variant="h6" sx={{ mb: 2 }}>
                 5-Day Forecast
               </Typography>
-              <Stack spacing={2}>
+              {/* <Stack spacing={2}>
                 {mockWeatherData.forecast.map((day, index) => (
                   <Box
                     key={index}
@@ -307,6 +321,37 @@ export default function WeatherHome() {
                     <Typography>{day.condition}</Typography>
                     <Chip
                       label={`${day.temp}°C`}
+                      color="primary"
+                      size="small"
+                    />
+                  </Box>
+                ))}
+              </Stack> */}
+
+              <Stack spacing={2}>
+                {weatherFore?.map((day, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      background: "rgba(255,255,255,0.1)",
+                      p: 1.5,
+                      borderRadius: 2,
+                      transition: "transform 0.3s",
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      },
+                    }}
+                  >
+                    <Typography>{formatTimestamp(day.dt)?.day}</Typography>
+                    {/* {React.cloneElement(day.icon, {
+                      sx: { color: "white", fontSize: 30 },
+                    })} */}
+                    <Typography>{day?.weather?.at(0)?.description}</Typography>
+                    <Chip
+                      label={`${day.main.temp}°C`}
                       color="primary"
                       size="small"
                     />

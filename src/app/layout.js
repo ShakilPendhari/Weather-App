@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorker } from "./Components/ServiceWorker";
 import { NetworkDetector } from "./Components/NetworkDetector";
+import { LocationProvider } from "../Context/LocationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ServiceWorker />
-        <NetworkDetector>{children}</NetworkDetector>
+        <NetworkDetector>
+          <LocationProvider>{children}</LocationProvider>
+        </NetworkDetector>
       </body>
     </html>
   );
