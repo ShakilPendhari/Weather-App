@@ -54,14 +54,12 @@ export default function WeatherHome() {
   const { coords } = useLocation();
   const [weatherFore, setWeatherFore] = useState();
 
+  async function updateWeather(lat, long) {
+    const newWeather = await fetchWeather(lat, long);
+    setWeatherFore(newWeather);
+  }
   useEffect(() => {
-    async function updateWeather(lat, long) {
-      const newWeather = await fetchWeather(lat, long);
-      setWeatherFore(newWeather);
-    }
-    if (coords.latitude && coords.longitude) {
-      updateWeather(coords.latitude, coords.longitude);
-    }
+    updateWeather(coords.latitude, coords.longitude);
     getLocationWeather();
   }, [coords, searchLocation]);
 
@@ -80,6 +78,7 @@ export default function WeatherHome() {
       const response = await AxiosInstance("data/2.5/weather", {
         params,
       });
+      updateWeather(response?.data?.coord?.lat, response?.data?.coord?.lon);
 
       setWeather(response.data);
     } catch (err) {
