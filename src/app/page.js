@@ -133,13 +133,13 @@ export default function WeatherHome() {
               p: "2px 4px",
               display: "flex",
               alignItems: "center",
-              width: 300,
+              width: 250,
               background: "rgba(255,255,255,0.2)",
               backdropFilter: "blur(10px)",
             }}
           >
             <InputBase
-              sx={{ ml: 1, flex: 1, color: "white" }}
+              sx={{ ml: 2, flex: 1, color: "white" }}
               placeholder="Search location"
               inputProps={{ "aria-label": "search location" }}
               value={searchLocation}
@@ -276,15 +276,23 @@ export default function WeatherHome() {
                       },
                     }}
                   >
-                    <Typography variant="h6">
-                      {formatTimestamp(day.dt)?.day}
-                    </Typography>
-                    <Typography>{formatTimestamp(day.dt)?.date}</Typography>
-                    <Typography>{formatTimestamp(day.dt)?.time}</Typography>
+                    <Stack>
+                      <Typography variant="h6">
+                        {formatTimestamp(day.dt)?.day}
+                      </Typography>
+                      <Typography sx={{ lineHeight: 1 }} variant="body1">
+                        {formatTimestamp(day.dt)?.date}
+                      </Typography>{" "}
+                      <Typography variant="caption">
+                        {formatTimestamp(day.dt)?.time}
+                      </Typography>
+                    </Stack>
                     {/* {React.cloneElement(day.icon, {
                       sx: { color: "white", fontSize: 30 },
                     })} */}
-                    <Typography>{day?.weather?.at(0)?.description}</Typography>
+                    <Typography>
+                      {day?.weather?.at(0)?.description?.toUpperCase()}
+                    </Typography>
                     <Chip
                       label={`${day.main.temp}°C`}
                       color="primary"
