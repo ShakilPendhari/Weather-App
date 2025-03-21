@@ -47,17 +47,11 @@ const mockWeatherData = {
     { day: "Fri", icon: <WindIcon />, temp: 22, condition: "Windy" },
   ],
 };
-// const updateWeather = () => {
-//   const getDate
-
-// };
 
 export default function WeatherHome() {
   const [searchLocation, setSearchLocation] = useState("");
   const [weather, setWeather] = useState(null);
-  const { coords, locationAccessAndGetWeather } = useLocation();
-  const [loadingPage, setLoadingPage] = useState();
-  const [error, setError] = useState("");
+  const { coords } = useLocation();
   const [weatherFore, setWeatherFore] = useState();
 
   useEffect(() => {
@@ -65,39 +59,13 @@ export default function WeatherHome() {
       const newWeather = await fetchWeather(lat, long);
       setWeatherFore(newWeather);
     }
-    updateWeather();
-  }, [coords.latitude, searchLocation]);
-
-  // const locationAccessAndGetWeather = () => {
-  //   if ("geolocation" in navigator) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         setLangLat((preLangLat) => ({
-  //           ...preLangLat,
-  //           longitude,
-  //           latitude,
-  //         }));
-  //       },
-  //       (err) => {
-  //         setError("Location access denied.");
-  //         setLoading(false);
-  //       }
-  //     );
-  //   } else {
-  //     setError("Geolocation is not supported.");
-  //     setLoading(false);
-  //   }
-  // };
-
-  useEffect(() => {
-    locationAccessAndGetWeather();
-  }, []);
+    if (coords.latitude && coords.longitude) {
+      updateWeather(coords.latitude, coords.longitude);
+    }
+    getLocationWeather();
+  }, [coords, searchLocation]);
 
   const getLocationWeather = async () => {
-    if (!(coords.latitude || coords.longitude)) {
-      return;
-    }
     try {
       const params = {};
       params.units = "metric";
@@ -107,7 +75,6 @@ export default function WeatherHome() {
         params.lat = coords.latitude;
         params.lon = coords.longitude;
       } else {
-        setError("Invalid location input.");
         return;
       }
       const response = await AxiosInstance("data/2.5/weather", {
@@ -116,15 +83,9 @@ export default function WeatherHome() {
 
       setWeather(response.data);
     } catch (err) {
-      setError("Failed to fetch weather data.");
-    } finally {
-      setLoadingPage(false);
+      console.error("Error::>>", err);
     }
   };
-
-  useEffect(() => {
-    getLocationWeather();
-  }, [searchLocation]);
 
   const debouncedSearch = useCallback(
     debounce(() => {
@@ -297,36 +258,6 @@ export default function WeatherHome() {
               <Typography variant="h6" sx={{ mb: 2 }}>
                 5-Day Forecast
               </Typography>
-              {/* <Stack spacing={2}>
-                {mockWeatherData.forecast.map((day, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      background: "rgba(255,255,255,0.1)",
-                      p: 1.5,
-                      borderRadius: 2,
-                      transition: "transform 0.3s",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
-                    <Typography>{day.day}</Typography>
-                    {React.cloneElement(day.icon, {
-                      sx: { color: "white", fontSize: 30 },
-                    })}
-                    <Typography>{day.condition}</Typography>
-                    <Chip
-                      label={`${day.temp}°C`}
-                      color="primary"
-                      size="small"
-                    />
-                  </Box>
-                ))}
-              </Stack> */}
 
               <Stack spacing={2}>
                 {weatherFore?.map((day, index) => (
@@ -345,7 +276,11 @@ export default function WeatherHome() {
                       },
                     }}
                   >
-                    <Typography>{formatTimestamp(day.dt)?.day}</Typography>
+                    <Typography variant="h6">
+                      {formatTimestamp(day.dt)?.day}
+                    </Typography>
+                    <Typography>{formatTimestamp(day.dt)?.date}</Typography>
+                    <Typography>{formatTimestamp(day.dt)?.time}</Typography>
                     {/* {React.cloneElement(day.icon, {
                       sx: { color: "white", fontSize: 30 },
                     })} */}

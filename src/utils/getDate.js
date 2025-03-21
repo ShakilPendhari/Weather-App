@@ -1,3 +1,5 @@
+"use client";
+
 export default function formatTimestamp(timestamp) {
   const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
 

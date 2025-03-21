@@ -1,13 +1,11 @@
 import AxiosInstance from "./axiosInstance";
 
-const fetchWeather = async (lan, lon) => {
-  console.log("lan::>>", lan, "long::>>", lon);
+const fetchWeather = async (lat, lon) => {
   try {
     const response = await AxiosInstance.get("data/2.5/forecast", {
       params: {
-        q: "Pune",
         units: "metric",
-        lan: lan,
+        lat: lat,
         lon: lon,
       },
     });
